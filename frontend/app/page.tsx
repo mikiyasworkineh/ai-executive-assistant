@@ -15,6 +15,7 @@ import {
   Zap,
   Terminal,
   RefreshCw,
+  Eraser,
 } from "lucide-react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
@@ -29,6 +30,7 @@ export default function ExecutiveDashboard() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [cronLoading, setCronLoading] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [agentReply, setAgentReply] = useState<string | null>(null);
 
   const [events, setEvents] = useState<any[]>([]);
@@ -38,7 +40,7 @@ export default function ExecutiveDashboard() {
 
   const fetchDashboard = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/dashboard`);
+      const res = await fetch(`${API_BASE}/api/dashboard`, { cache: "no-store" });
       const data = await res.json();
       setEvents(data.events || []);
       setTasks(data.tasks || []);
@@ -92,6 +94,28 @@ export default function ExecutiveDashboard() {
       setAgentReply(`⚠️ Error triggering briefing: ${err.message}`);
     } finally {
       setCronLoading(false);
+    }
+  };
+
+  const resetDemo = async () => {
+    if (!confirm("Clear the local demo data (tasks, events, emails, logs) and reseed? Google Calendar is not touched.")) {
+      return;
+    }
+    setResetting(true);
+    setAgentReply(null);
+    try {
+      const res = await fetch(`${API_BASE}/api/demo/reset?seed=true`, {
+        method: "POST",
+        headers: authHeaders(),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Reset failed");
+      setAgentReply("Demo data reset. Tasks, events, emails and logs were cleared and reseeded.");
+      await fetchDashboard();
+    } catch (err: any) {
+      setAgentReply(`⚠️ Error resetting demo data: ${err.message}`);
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -160,6 +184,15 @@ export default function ExecutiveDashboard() {
             {cronLoading
               ? "Running Morning Briefing..."
               : "⚡ Trigger Proactive Morning Briefing (Cron)"}
+          </button>
+          <button
+            onClick={resetDemo}
+            disabled={resetting}
+            className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-rose-500/10 text-slate-300 hover:text-rose-300 border border-slate-800 hover:border-rose-500/30 text-sm font-medium transition cursor-pointer disabled:opacity-50"
+            title="Clear local demo data and reseed (Google Calendar stays untouched)"
+          >
+            <Eraser className="w-4 h-4" />
+            {resetting ? "Resetting..." : "Reset demo"}
           </button>
           <button
             onClick={fetchDashboard}

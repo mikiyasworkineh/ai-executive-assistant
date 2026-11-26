@@ -9,6 +9,7 @@ Business logic lives in `agent`, `briefing` and `tools`.
     GET    /api/dashboard            events + tasks + emails + activity log
     POST   /api/tasks/{id}/toggle    flip pending <-> completed
     DELETE /api/tasks/{id}           delete a task
+    POST   /api/demo/reset           clear demo data (used by the UI button)
 """
 
 import sqlite3
@@ -18,6 +19,7 @@ from pydantic import BaseModel
 
 from .agent import AgentNotConfigured, AgentOverloaded, run_agent
 from .briefing import run_morning_briefing
+from .demo import reset_demo_data
 from .database import connect
 from .diagnostics import health_payload
 from .security import require_api_key
@@ -110,3 +112,14 @@ def delete_task(task_id: int):
     finally:
         conn.close()
     return {"status": "deleted"}
+
+
+@router.post("/api/demo/reset", dependencies=[Depends(require_api_key)])
+def reset_demo(seed: bool = False, include_google: bool = False):
+    """Clears the demo tables so a recording starts from a clean state.
+
+    Query params:
+      seed=true            re-insert the demo events/tasks afterwards
+      include_google=true  also delete Google events this app booked
+    """
+    return reset_demo_data(seed=seed, include_google=include_google)
