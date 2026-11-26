@@ -7,6 +7,7 @@ __pycache__/
 .venv/
 venv/
 env/
+doc/
 
 # ---------------------------------------------------------------------------
 # Secrets & local config - NEVER commit these
