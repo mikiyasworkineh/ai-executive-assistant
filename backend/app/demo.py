@@ -8,7 +8,7 @@ Only local tables are deleted by default. Google Calendar is untouched unless
 ones present in the local mirror) are removed.
 """
 
-from .calendar_api import delete_remote_event, is_remote_id
+from .calendar_api import delete_remote_event, find_tagged_events, is_remote_id
 from .config import now_local, today_local
 from .database import connect
 
@@ -95,10 +95,26 @@ def reset_demo_data(*, seed: bool = False, include_google: bool = False) -> dict
 
         google_results = []
         if include_google:
+            # 1) events listed in the local mirror
+            handled = set()
             for gcal_id, title in remote:
                 ok, detail = delete_remote_event(gcal_id)
+                handled.add(gcal_id)
                 google_results.append(
                     {"title": title, "gcal_id": gcal_id, "deleted": ok, "detail": detail}
+                )
+            # 2) events tagged by this app, even if the mirror was already wiped
+            for event in find_tagged_events():
+                if event["gcal_id"] in handled:
+                    continue
+                ok, detail = delete_remote_event(event["gcal_id"])
+                google_results.append(
+                    {
+                        "title": event["title"],
+                        "gcal_id": event["gcal_id"],
+                        "deleted": ok,
+                        "detail": detail,
+                    }
                 )
 
         for table in TABLES:

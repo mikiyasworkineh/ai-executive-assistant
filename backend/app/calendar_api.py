@@ -23,6 +23,10 @@ from .config import (
 from .tracing import log_action
 from .utils import split_emails
 
+# Private marker written on every event this app creates, so demo cleanup can
+# find them even after the local mirror has been cleared.
+APP_TAG = "ai-executive-assistant"
+
 
 def oauth_token_present() -> bool:
     cfg = gcal_config()
@@ -156,6 +160,8 @@ def insert_event(title: str, start_time: str, end_time: str, attendee_email: str
         "description": f"{description} | Attendee: {attendee_email}",
         "start": {"dateTime": f"{start_time}:00", "timeZone": APP_TIMEZONE},
         "end": {"dateTime": f"{end_time}:00", "timeZone": APP_TIMEZONE},
+        # Tag so demo cleanup can find events even if the local mirror is gone.
+        "extendedProperties": {"private": {"source": APP_TAG}},
     }
     if attendees:
         body["attendees"] = [{"email": address} for address in attendees]
@@ -294,3 +300,32 @@ def patch_event_times(event_id: str, start_time: str, end_time: str) -> tuple[bo
     except Exception as error:  # noqa: BLE001 - fall back to local mirror
         print(f"Google Calendar patch note: {error}", flush=True)
         return False, str(error)[:160]
+
+
+def find_tagged_events(days_back: int = 30, days_ahead: int = 120) -> list[dict]:
+    """Events created by this app (private extended property APP_TAG)."""
+    service = get_service()
+    if not service:
+        return []
+    now = datetime.now(local_tz())
+    try:
+        result = (
+            service.events()
+            .list(
+                calendarId=gcal_config()["calendar_id"],
+                timeMin=(now - timedelta(days=days_back)).isoformat(),
+                timeMax=(now + timedelta(days=days_ahead)).isoformat(),
+                singleEvents=True,
+                privateExtendedProperty=f"source={APP_TAG}",
+                maxResults=250,
+            )
+            .execute()
+        )
+    except Exception as error:  # noqa: BLE001 - cleanup is best effort
+        print(f"Google Calendar tagged-event lookup note: {error}", flush=True)
+        return []
+    return [
+        {"gcal_id": item.get("id"), "title": item.get("summary", "(no title)")}
+        for item in result.get("items", [])
+        if item.get("id")
+    ]

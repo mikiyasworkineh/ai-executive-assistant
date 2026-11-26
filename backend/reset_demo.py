@@ -5,7 +5,7 @@ Usage (from the repo root):
     python backend/reset_demo.py                 # dry run
     python backend/reset_demo.py --yes           # clear local tables
     python backend/reset_demo.py --yes --seed    # clear, then insert demo rows
-    python backend/reset_demo.py --yes --keep-google   # default: Google untouched
+    (Google Calendar is NOT touched unless you pass --include-google)
     python backend/reset_demo.py --yes --include-google  # also delete mirrored Google events
 
 The same logic powers the "Reset demo" button in the UI
