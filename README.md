@@ -264,5 +264,4 @@ ai-executive-assistant/
 ## Documentation
 
 - `backend/README.md` - module-by-module backend guide and data flow
-- `docs/DEMO_SCRIPT.md` - 6-minute walkthrough script for the demo video
 - `http://localhost:8000/docs` - generated OpenAPI reference
