@@ -1,0 +1,15 @@
+# Normalise line endings across the repo.
+* text=auto eol=lf
+
+# Windows launchers must keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binaries
+*.png binary
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.db binary
