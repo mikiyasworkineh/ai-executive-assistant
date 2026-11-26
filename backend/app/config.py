@@ -83,8 +83,10 @@ API_AUTH_TOKEN = os.getenv("API_AUTH_TOKEN", "").strip()
 # Google regularly returns 503 UNAVAILABLE for the newest models under load,
 # so the agent retries and then walks the fallback list.
 # --------------------------------------------------------------------------- #
-MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-flash-latest").strip()
-FALLBACK_MODELS = _csv(os.getenv("GEMINI_FALLBACK_MODELS", "gemini-3.8-flash,gemini-3.1-flash-lite"))
+MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite").strip()
+FALLBACK_MODELS = _csv(
+    os.getenv("GEMINI_FALLBACK_MODELS", "gemini-3.8-flash,gemini-flash-latest")
+)
 
 GEMINI_ATTEMPTS = max(1, int(os.getenv("GEMINI_ATTEMPTS", "2")))
 GEMINI_REQUEST_TIMEOUT_MS = int(os.getenv("GEMINI_REQUEST_TIMEOUT_MS", "30000"))

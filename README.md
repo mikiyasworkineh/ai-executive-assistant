@@ -143,8 +143,8 @@ All settings live in `backend/.env` (template: `backend/.env.example`).
 | Variable | Default | Purpose |
 |---|---|---|
 | `GEMINI_API_KEY` | - | required |
-| `GEMINI_MODEL` | `gemini-flash-latest` | primary model |
-| `GEMINI_FALLBACK_MODELS` | `gemini-3.8-flash,gemini-3.1-flash-lite` | tried in order on 503/429 |
+| `GEMINI_MODEL` | `gemini-3.1-flash-lite` | primary model (fast, usually available) |
+| `GEMINI_FALLBACK_MODELS` | `gemini-3.8-flash,gemini-flash-latest` | tried in order on 503/429 |
 | `APP_TIMEZONE` | `UTC` | timezone for events, briefing, display |
 | `GOOGLE_CALENDAR_ID` | `primary` | target calendar |
 | `CALENDAR_BACKEND` | `auto` | `auto` / `service_account` / `oauth` |
